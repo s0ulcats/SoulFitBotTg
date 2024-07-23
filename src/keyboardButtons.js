@@ -16,12 +16,17 @@ module.exports = {
             TypesOfFoodGain: '🔵Вариация блюд для набора',
         },
     },
+    TypesOfTraining: {
+        Shark: '🟢Программ для жима SHARK',
+        Tatwole: '🔵План тренировок на месяц'
+    },
     Purchases: {
         Buy_a_course: '🔵Купить курс по питанию',
     },
     home: {
         Buy: '🔵Приобрести',
-        TypesOfProgramms: '🟢Программы',
+        TypesOfProgramms: '🟢Питание',
+        TypesOfTraining: '🟣Тренировки'
     },
     Cb: '🔴Связаться с руководством',
     backToHome: '▪️Вернутся',

@@ -2,7 +2,7 @@ const kb = require("./keyboardButtons");
 
 module.exports = {
     home: [
-        [{ text: kb.home.Buy }, { text: kb.home.TypesOfProgramms }],
+        [{ text: kb.home.TypesOfTraining }, { text: kb.home.TypesOfProgramms }],
         [{ text: kb.Cb }]
     ],
     BackToHome: [
@@ -12,10 +12,14 @@ module.exports = {
         [{ text: kb.TypesOfProgramm.weight_lose }, { text: kb.TypesOfProgramm.weight_retention }, { text: kb.TypesOfProgramm.mass_gain }],
         [{ text: kb.Cb }, { text: kb.backToHome }]
     ],
-    typesOfPurchases: [
+    typesOfTraining: [
+        [{ text: kb.TypesOfTraining.Shark }, { text: kb.TypesOfTraining.Tatwole }],
+        [{ text: kb.backToHome }]
+    ],
+    /*typesOfPurchases: [
         [{ text: kb.Purchases.Buy_a_course }],
         [{ text: kb.Cb }, { text: kb.backToHome }]
-    ],
+    ],*/
     BtnForLose: [
         [{ text: kb.TypesOfProgramm.lose.DataLose }, { text: kb.TypesOfProgramm.lose.TypesOfFoodLose }, { text: kb.KkalInFood}],
         [{ text: kb.backToHome }]

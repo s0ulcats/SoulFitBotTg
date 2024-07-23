@@ -6,8 +6,9 @@ const helper = require('./helper.js');
 const chatId = helper.getChatId;
 const kb = require('./keyboardButtons.js');
 const keyboard = require('./keyboard.js');
+const fs = require('fs');
+const path = require('path');
 let isPaid = false;
-
 // const con = mysql.createConnection({
 //     host: '127.0.0.1',
 //     user: 'root',
@@ -28,24 +29,23 @@ const bot = new TelegramBot(token.TOKEN, {
     polling: true
 });
 
-bot.onText('/start', async msg => {
-    await bot.sendMessage(chatId(msg), `🏋️‍♀️Добро пожаловать в кузню, Бодибилдер`, {
-        reply_markup: {
-            keyboard: keyboard.home
-        }
-    })
-    // await bot.sendPhoto(chatId(msg), 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhyY12JYOyqGKPKFdJKLLaFy2BLTauJ4XXSA&s');
-})
+bot.onText(/\/start/, async (msg) => {
+        const chatId = msg.chat.id;
+        await bot.sendMessage(chatId, `🏋️‍♀️Добро пожаловать в кузню, Бодибилдер`, {
+            reply_markup: { keyboard: keyboard.home }
+        });
+        // await bot.sendPhoto(chatId, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhyY12JYOyqGKPKFdJKLLaFy2BLTauJ4XXSA&s');
+});
 
 bot.on('message', async msg => {
-    console.log('Working...', msg.from.first_name);
-
+    console.log('Working...', msg.from.first_name, msg.from.last_name);
+    console.log('Recording: ', msg.text);
     switch(msg.text){
-        case kb.home.Buy:
+        /*case kb.home.Buy:
             bot.sendMessage(chatId(msg), `💪🏻Выбирете, пожаулйста, вариант который вас интересует`,{
                 reply_markup: {keyboard: keyboard.typesOfPurchases}
             })
-            break
+            break*/
         case kb.backToHome:
             bot.sendMessage(chatId(msg), `🟢Выбирете, пожалуйста, то что вас интересует`, {
                 reply_markup: {keyboard: keyboard.home}
@@ -57,17 +57,17 @@ bot.on('message', async msg => {
             })
             break
         case kb.TypesOfProgramm.weight_lose:
-            bot.sendMessage(chatId(msg), `✨Поздравляю с покупкой, совсем скоро будете шикарны!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для похудения', и ввести туда данные которые у вас попросят!`, {
+            bot.sendMessage(chatId(msg), `✨Добро пожаловать, ещё не много и будешь мощнее Арнольда Шварценеггера!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для похудения', и ввести туда данные которые у вас попросят!`, {
                 reply_markup: {keyboard: keyboard.BtnForLose}
             })
             break
         case kb.TypesOfProgramm.weight_retention:
-            bot.sendMessage(chatId(msg), `✨Поздравляю с покупкой, совсем скоро будете шикарны!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для удержания', и ввести туда данные которые у вас попросят!`, {
+            bot.sendMessage(chatId(msg), `✨Добро пожаловать, ещё не много и будешь мощнее Арнольда Шварценеггера!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для удержания', и ввести туда данные которые у вас попросят!`, {
                 reply_markup: {keyboard: keyboard.BtnForRetention}
             })
             break
         case kb.TypesOfProgramm.mass_gain:
-            bot.sendMessage(chatId(msg), `✨Поздравляю с покупкой, совсем скоро будете шикарны!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для набора', и ввести туда данные которые у вас попросят!`, {
+            bot.sendMessage(chatId(msg), `✨Добро пожаловать, ещё немного и будешь мощнее Арнольда Шварценеггера!\n🟢На данном этапе вам стоит выбрать меню с кнопкой 'Данные для набора', и ввести туда данные которые у вас попросят!`, {
                 reply_markup: {keyboard: keyboard.BtnForGain}
             })
             break
@@ -82,6 +82,43 @@ bot.on('message', async msg => {
                 });
         //     }
             break
+        case kb.home.TypesOfTraining:
+                await bot.sendMessage(chatId(msg), `🟢Выберите пожалуйста вариант, по которой вы хотели бы заниматься!`, {
+                        reply_markup: {keyboard: keyboard.typesOfTraining}
+                });
+                break
+        case kb.TypesOfTraining.Shark:
+                const filePathShark = path.resolve(__dirname, './documents/Shark.xlsx');
+                console.log('File path:', filePathShark);
+
+                bot.sendMessage(chatId(msg), `🟢Вы выбрали программу SHARK\nТеперь не за горами жим лежа 180`, {
+                        reply_markup: { keyboard: keyboard.typesOfTraining }
+                })
+                .then(() => {
+                return bot.sendDocument(chatId(msg), filePathShark, {
+                        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                })
+                .then(() => {
+                console.log('File sent successfully');
+                })
+                break  
+        case kb.TypesOfTraining.Tatwole:
+                const filePathTatwole = path.resolve(__dirname, './documents/training-schedle.xlsx');
+                console.log('File path:', filePathTatwole);
+
+                bot.sendMessage(chatId(msg), `🟢Вы выбрали программу тренировок на месяц\nСовсем не много и станешь как Kevin Levrone`, {
+                        reply_markup: { keyboard: keyboard.typesOfTraining }
+                })
+                .then(() => {
+                return bot.sendDocument(chatId(msg), filePathTatwole, {
+                        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                })
+                .then(() => {
+                console.log('File sent successfully');
+                })
+                break   
         case kb.TypesOfProgramm.lose.DataLose:
             await bot.sendMessage(chatId(msg), 
             `⚜️Заполните пожалуйста форму
@@ -1137,427 +1174,427 @@ bot.on('message', async msg => {
                 })
                 break
         case kb.Purchases.Buy_a_course:
-                await bot.sendMessage(chatId(msg), `🟢Выбирете, пожалуйста, метод оплаты`, {
-                        reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetCurency}
+                await bot.sendMessage(chatId(msg), `Coming Soon...`, {
+                        reply_markup: {keyboard: keyboard.BackToHome}
                 })
                 break;
         
         }
 })
-bot.on('callback_query', async (callbackQuery) => {
-        const message = callbackQuery.message;
-        const data = callbackQuery.data;
+// bot.on('callback_query', async (callbackQuery) => {
+//         const message = callbackQuery.message;
+//         const data = callbackQuery.data;
     
-        switch (data) {
-                case 'ukr':
-                        await bot.sendMessage(message.chat.id, '🔷Ви обрали спосіб оплати у валюті "Гривня"\nВиберіть будь ласка платіжну систему, яка буде вам більш зручніша', {
-                                reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUah}
-                        });
-                        break;
-                case 'rus':
-                        await bot.sendMessage(message.chat.id, '🔷Вы выбрали вариант оплаты в валюте "Рубль"\nВыбирете пожалуйста платежную систему, которая вам будет более удобна', {
-                                reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForRub}
-                        });
-                        break;
-                case 'usd/eur':
-                        await bot.sendMessage(message.chat.id, '🔷You chose type of payment in curency "Usd/Eur/GBP"\nPls chose payment system', {
-                                reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUsdEur}
-                        });
-                        break;
-                case 'kz':
-                        await bot.sendMessage(message.chat.id, '🔷Сіз "Қазақстан теңгесі" валютасындағы төлем опциясын таңдадыңыз\nСізге ыңғайлырақ төлем жүйесін таңдаңыз', {
-                                reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForKz}
-                        });
-                        break;
-                case 'uz':
-                        await bot.sendMessage(message.chat.id, '🔷Siz "Ubesky Sum" valyutasida toʻlov variantini tanladingiz\nIltimos, siz uchun qulayroq boʻlgan toʻlov tizimini tanlang', {
-                                reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUz}
-                        });
-                        break;
-                case 'Portmone':
-                        const chatIdValuePortmone = chatId(message);
-                        const titlePortmone = "Курс харчування";
-                        const descriptionPortmone = "Завдяки цьому курсу ви станете ідеалом себе";
-                        const payloadPortmone = "payload...";
-                        const providerTokenPortmone = token.Portmone_TOKEN;
-                        const currencyPortmone = "UAH"; // Проверьте правильность кода валюты
-                        const pricesPortmone = [
-                                {
-                                label: "Курс харчування",
-                                amount: 12000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsPortmone = {
-                                need_name: true
-                        };
-                        const replyMarkupPortmone = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//         switch (data) {
+//                 case 'ukr':
+//                         await bot.sendMessage(message.chat.id, '🔷Ви обрали спосіб оплати у валюті "Гривня"\nВиберіть будь ласка платіжну систему, яка буде вам більш зручніша', {
+//                                 reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUah}
+//                         });
+//                         break;
+//                 case 'rus':
+//                         await bot.sendMessage(message.chat.id, '🔷Вы выбрали вариант оплаты в валюте "Рубль"\nВыбирете пожалуйста платежную систему, которая вам будет более удобна', {
+//                                 reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForRub}
+//                         });
+//                         break;
+//                 case 'usd/eur':
+//                         await bot.sendMessage(message.chat.id, '🔷You chose type of payment in curency "Usd/Eur/GBP"\nPls chose payment system', {
+//                                 reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUsdEur}
+//                         });
+//                         break;
+//                 case 'kz':
+//                         await bot.sendMessage(message.chat.id, '🔷Сіз "Қазақстан теңгесі" валютасындағы төлем опциясын таңдадыңыз\nСізге ыңғайлырақ төлем жүйесін таңдаңыз', {
+//                                 reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForKz}
+//                         });
+//                         break;
+//                 case 'uz':
+//                         await bot.sendMessage(message.chat.id, '🔷Siz "Ubesky Sum" valyutasida toʻlov variantini tanladingiz\nIltimos, siz uchun qulayroq boʻlgan toʻlov tizimini tanlang', {
+//                                 reply_markup: {inline_keyboard: keyboard.inline_keyboardForSetMethodForUz}
+//                         });
+//                         break;
+//                 case 'Portmone':
+//                         const chatIdValuePortmone = chatId(message);
+//                         const titlePortmone = "Курс харчування";
+//                         const descriptionPortmone = "Завдяки цьому курсу ви станете ідеалом себе";
+//                         const payloadPortmone = "payload...";
+//                         const providerTokenPortmone = token.Portmone_TOKEN;
+//                         const currencyPortmone = "UAH"; // Проверьте правильность кода валюты
+//                         const pricesPortmone = [
+//                                 {
+//                                 label: "Курс харчування",
+//                                 amount: 12000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsPortmone = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupPortmone = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responsePortmone = await bot.sendInvoice(
-                                chatIdValuePortmone,
-                                titlePortmone,
-                                descriptionPortmone,
-                                payloadPortmone,
-                                providerTokenPortmone,
-                                currencyPortmone,
-                                pricesPortmone,
-                                optionsPortmone,
-                                { reply_markup: replyMarkupPortmone }
-                                );
-                                console.log('Invoice sent successfully:', responsePortmone);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responsePortmone?.data || error.message);
-                        }
-                        break
-                case 'Tranzzo':
-                        const chatIdValueTranzzo = chatId(message);
-                        const titleTranzzo = "Курс питания || Nutrition course";
-                        const descriptionTranzzo = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
-                        const payloadTranzzo = "payload...";
-                        const providerTokenTranzzo = token.Tranzzo_TOKEN;
-                        const currencyTranzzo = `USD` // Проверьте правильность кода валюты
-                        const pricesTranzzo = [
-                                {
-                                label: "Курс питания || Nutrition course",
-                                amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsTranzzo = {
-                                need_name: true
-                        };
-                        const replyMarkupTranzzo = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responsePortmone = await bot.sendInvoice(
+//                                 chatIdValuePortmone,
+//                                 titlePortmone,
+//                                 descriptionPortmone,
+//                                 payloadPortmone,
+//                                 providerTokenPortmone,
+//                                 currencyPortmone,
+//                                 pricesPortmone,
+//                                 optionsPortmone,
+//                                 { reply_markup: replyMarkupPortmone }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responsePortmone);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responsePortmone?.data || error.message);
+//                         }
+//                         break
+//                 case 'Tranzzo':
+//                         const chatIdValueTranzzo = chatId(message);
+//                         const titleTranzzo = "Курс питания || Nutrition course";
+//                         const descriptionTranzzo = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
+//                         const payloadTranzzo = "payload...";
+//                         const providerTokenTranzzo = token.Tranzzo_live_TOKEN;
+//                         const currencyTranzzo = `USD` // Проверьте правильность кода валюты
+//                         const pricesTranzzo = [
+//                                 {
+//                                 label: "Курс питания || Nutrition course",
+//                                 amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsTranzzo = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupTranzzo = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseTranzzo = await bot.sendInvoice(
-                                chatIdValueTranzzo,
-                                titleTranzzo,
-                                descriptionTranzzo,
-                                payloadTranzzo,
-                                providerTokenTranzzo,
-                                currencyTranzzo,
-                                pricesTranzzo,
-                                optionsTranzzo,
-                                { reply_markup: replyMarkupTranzzo }
-                                );
-                                console.log('Invoice sent successfully:', responseTranzzo);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseTranzzo?.data || error.message);
-                        }
-                        break
-                case 'Sber':
-                        const chatIdValueSber = chatId(message);
-                        const titleSber = "Курс питания";
-                        const descriptionSber = "С помощью данного курса вы станете идеальной версией себя";
-                        const payloadSber = "payload...";
-                        const providerTokenSber = token.Sber_TOKEN;
-                        const currencySber = "RUB"; // Проверьте правильность кода валюты
-                        const pricesSber = [
-                                {
-                                label: "Курс питания",
-                                amount: 30000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsSber = {
-                                need_name: true
-                        };
-                        const replyMarkupSber = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseTranzzo = await bot.sendInvoice(
+//                                 chatIdValueTranzzo,
+//                                 titleTranzzo,
+//                                 descriptionTranzzo,
+//                                 payloadTranzzo,
+//                                 providerTokenTranzzo,
+//                                 currencyTranzzo,
+//                                 pricesTranzzo,
+//                                 optionsTranzzo,
+//                                 { reply_markup: replyMarkupTranzzo }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseTranzzo);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseTranzzo?.data || error.message);
+//                         }
+//                         break
+//                 case 'Sber':
+//                         const chatIdValueSber = chatId(message);
+//                         const titleSber = "Курс питания";
+//                         const descriptionSber = "С помощью данного курса вы станете идеальной версией себя";
+//                         const payloadSber = "payload...";
+//                         const providerTokenSber = token.Sber_TOKEN;
+//                         const currencySber = "RUB"; // Проверьте правильность кода валюты
+//                         const pricesSber = [
+//                                 {
+//                                 label: "Курс питания",
+//                                 amount: 30000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsSber = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupSber = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseSber = await bot.sendInvoice(
-                                chatIdValueSber,
-                                titleSber,
-                                descriptionSber,
-                                payloadSber,
-                                providerTokenSber,
-                                currencySber,
-                                pricesSber,
-                                optionsSber,
-                                { reply_markup: replyMarkupSber }
-                                );
-                                console.log('Invoice sent successfully:', responseSber);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseSber?.data || error.message);
-                        }
-                        break
-                case 'Ukassa':
-                        const chatIdValueUkassa = chatId(message);
-                        const titleUkassa = "Курс питания";
-                        const descriptionUkassa = "С помощью данного курса вы станете идеальной версией себя";
-                        const payloadUkassa = "payload...";
-                        const providerTokenUkassa = token.Ukassa_TOKEN;
-                        const currencyUkassa = "RUB"; // Проверьте правильность кода валюты
-                        const pricesUkassa = [
-                                {
-                                label: "Курс питания",
-                                amount: 30000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsUkassa = {
-                                need_name: true
-                        };
-                        const replyMarkupUkassa = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseSber = await bot.sendInvoice(
+//                                 chatIdValueSber,
+//                                 titleSber,
+//                                 descriptionSber,
+//                                 payloadSber,
+//                                 providerTokenSber,
+//                                 currencySber,
+//                                 pricesSber,
+//                                 optionsSber,
+//                                 { reply_markup: replyMarkupSber }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseSber);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseSber?.data || error.message);
+//                         }
+//                         break
+//                 case 'Ukassa':
+//                         const chatIdValueUkassa = chatId(message);
+//                         const titleUkassa = "Курс питания";
+//                         const descriptionUkassa = "С помощью данного курса вы станете идеальной версией себя";
+//                         const payloadUkassa = "payload...";
+//                         const providerTokenUkassa = token.Ukassa_TOKEN;
+//                         const currencyUkassa = "RUB"; // Проверьте правильность кода валюты
+//                         const pricesUkassa = [
+//                                 {
+//                                 label: "Курс питания",
+//                                 amount: 30000 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsUkassa = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupUkassa = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseUkassa = await bot.sendInvoice(
-                                chatIdValueUkassa,
-                                titleUkassa,
-                                descriptionUkassa,
-                                payloadUkassa,
-                                providerTokenUkassa,
-                                currencyUkassa,
-                                pricesUkassa,
-                                optionsUkassa,
-                                { reply_markup: replyMarkupUkassa }
-                                );
-                                console.log('Invoice sent successfully:', responseUkassa);
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseUkassa?.data || error.message);
-                        }
-                        break
-                case 'Smart_Glocal':
-                        const chatIdValueSmart_Glocal = chatId(message);
-                        const titleSmart_Glocal = "Курс питания || Nutrition course";
-                        const descriptionSmart_Glocal = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
-                        const payloadSmart_Glocal = "payload...";
-                        const providerTokenSmart_Glocal = token.Smart_Glocal_TOKEN;
-                        const currencySmart_Glocal = "USD"; // Проверьте правильность кода валюты
-                        const pricesSmart_Glocal = [
-                                {
-                                label: "Курс питания || Nutrition course",
-                                amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsSmart_Glocal = {
-                                need_name: true
-                        };
-                        const replyMarkupSmart_Glocal = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseUkassa = await bot.sendInvoice(
+//                                 chatIdValueUkassa,
+//                                 titleUkassa,
+//                                 descriptionUkassa,
+//                                 payloadUkassa,
+//                                 providerTokenUkassa,
+//                                 currencyUkassa,
+//                                 pricesUkassa,
+//                                 optionsUkassa,
+//                                 { reply_markup: replyMarkupUkassa }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseUkassa);
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseUkassa?.data || error.message);
+//                         }
+//                         break
+//                 case 'Smart_Glocal':
+//                         const chatIdValueSmart_Glocal = chatId(message);
+//                         const titleSmart_Glocal = "Курс питания || Nutrition course";
+//                         const descriptionSmart_Glocal = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
+//                         const payloadSmart_Glocal = "payload...";
+//                         const providerTokenSmart_Glocal = token.Smart_Glocal_TOKEN;
+//                         const currencySmart_Glocal = "USD"; // Проверьте правильность кода валюты
+//                         const pricesSmart_Glocal = [
+//                                 {
+//                                 label: "Курс питания || Nutrition course",
+//                                 amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsSmart_Glocal = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupSmart_Glocal = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseSmart_Glocal = await bot.sendInvoice(
-                                chatIdValueSmart_Glocal,
-                                titleSmart_Glocal,
-                                descriptionSmart_Glocal,
-                                payloadSmart_Glocal,
-                                providerTokenSmart_Glocal,
-                                currencySmart_Glocal,
-                                pricesSmart_Glocal,
-                                optionsSmart_Glocal,
-                                { reply_markup: replyMarkupSmart_Glocal }
-                                );
-                                console.log('Invoice sent successfully:', responseSmart_Glocal);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseSmart_Glocal?.data || error.message);
-                        }
-                        break
-                case 'Unlimint':
-                        const chatIdValueUnlimint = chatId(message);
-                        const titleUnlimint = "Курс питания || Nutrition course";
-                        const descriptionUnlimint = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
-                        const payloadUnlimint = "payload...";
-                        const providerTokenUnlimint = token.Unlimint_TOKEN;
-                        const currencyUnlimint = "USD"; // Проверьте правильность кода валюты
-                        const pricesUnlimint = [
-                                {
-                                label: "Курс питания || Nutrition course",
-                                amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsUnlimint = {
-                                need_name: true
-                        };
-                        const replyMarkupUnlimint = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseSmart_Glocal = await bot.sendInvoice(
+//                                 chatIdValueSmart_Glocal,
+//                                 titleSmart_Glocal,
+//                                 descriptionSmart_Glocal,
+//                                 payloadSmart_Glocal,
+//                                 providerTokenSmart_Glocal,
+//                                 currencySmart_Glocal,
+//                                 pricesSmart_Glocal,
+//                                 optionsSmart_Glocal,
+//                                 { reply_markup: replyMarkupSmart_Glocal }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseSmart_Glocal);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseSmart_Glocal?.data || error.message);
+//                         }
+//                         break
+//                 case 'Unlimint':
+//                         const chatIdValueUnlimint = chatId(message);
+//                         const titleUnlimint = "Курс питания || Nutrition course";
+//                         const descriptionUnlimint = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
+//                         const payloadUnlimint = "payload...";
+//                         const providerTokenUnlimint = token.Unlimint_TOKEN;
+//                         const currencyUnlimint = "USD"; // Проверьте правильность кода валюты
+//                         const pricesUnlimint = [
+//                                 {
+//                                 label: "Курс питания || Nutrition course",
+//                                 amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsUnlimint = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupUnlimint = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseUnlimint = await bot.sendInvoice(
-                                chatIdValueUnlimint,
-                                titleUnlimint,
-                                descriptionUnlimint,
-                                payloadUnlimint,
-                                providerTokenUnlimint,
-                                currencyUnlimint,
-                                pricesUnlimint,
-                                optionsUnlimint,
-                                { reply_markup: replyMarkupUnlimint }
-                                );
-                                console.log('Invoice sent successfully:', responseUnlimint);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseUnlimint?.data || error.message);
-                        }
-                        break
-                case 'Bill_line':
-                        const chatIdValuebill_line = chatId(message);
-                        const titlebill_line = "Курс питания || Nutrition course";
-                        const descriptionbill_line = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
-                        const payloadbill_line = "payload...";
-                        const providerTokenbill_line = token.Bill_line;
-                        const currencybill_line = "USD"; // Проверьте правильность кода валюты
-                        const pricesbill_line = [
-                                {
-                                label: "Курс питания || Nutrition course",
-                                amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsbill_line = {
-                                need_name: true
-                        };
-                        const replyMarkupbill_line = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseUnlimint = await bot.sendInvoice(
+//                                 chatIdValueUnlimint,
+//                                 titleUnlimint,
+//                                 descriptionUnlimint,
+//                                 payloadUnlimint,
+//                                 providerTokenUnlimint,
+//                                 currencyUnlimint,
+//                                 pricesUnlimint,
+//                                 optionsUnlimint,
+//                                 { reply_markup: replyMarkupUnlimint }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseUnlimint);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseUnlimint?.data || error.message);
+//                         }
+//                         break
+//                 case 'Bill_line':
+//                         const chatIdValuebill_line = chatId(message);
+//                         const titlebill_line = "Курс питания || Nutrition course";
+//                         const descriptionbill_line = "С помощью данного курса вы станете идеальной версией себя\nWith this course you become like candy";
+//                         const payloadbill_line = "payload...";
+//                         const providerTokenbill_line = token.Bill_line;
+//                         const currencybill_line = "USD"; // Проверьте правильность кода валюты
+//                         const pricesbill_line = [
+//                                 {
+//                                 label: "Курс питания || Nutrition course",
+//                                 amount: 300 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsbill_line = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupbill_line = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responsebill_line = await bot.sendInvoice(
-                                chatIdValuebill_line,
-                                titlebill_line,
-                                descriptionbill_line,
-                                payloadbill_line,
-                                providerTokenbill_line,
-                                currencybill_line,
-                                pricesbill_line,
-                                optionsbill_line,
-                                { reply_markup: replyMarkupbill_line }
-                                );
-                                console.log('Invoice sent successfully:', responsebill_line);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responsebill_line?.data || error.message);
-                        }
-                        break
-                case 'Paycom_Uz':
-                        const chatIdValuePaycom_Uz = chatId(message);
-                        const titlePaycom_Uz = "Oziqlanish kursi";
-                        const descriptionPaycom_Uz = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
-                        const payloadPaycom_Uz = "payload...";
-                        const providerTokenPaycom_Uz = token.Paycom_Uz_TOKEN;
-                        const currencyPaycom_Uz = "UZS"; // Проверьте правильность кода валюты
-                        const pricesPaycom_Uz = [
-                                {
-                                label: "Oziqlanish kursi",
-                                amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsPaycom_Uz = {
-                                need_name: true
-                        };
-                        const replyMarkupPaycom_Uz = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responsebill_line = await bot.sendInvoice(
+//                                 chatIdValuebill_line,
+//                                 titlebill_line,
+//                                 descriptionbill_line,
+//                                 payloadbill_line,
+//                                 providerTokenbill_line,
+//                                 currencybill_line,
+//                                 pricesbill_line,
+//                                 optionsbill_line,
+//                                 { reply_markup: replyMarkupbill_line }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responsebill_line);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responsebill_line?.data || error.message);
+//                         }
+//                         break
+//                 case 'Paycom_Uz':
+//                         const chatIdValuePaycom_Uz = chatId(message);
+//                         const titlePaycom_Uz = "Oziqlanish kursi";
+//                         const descriptionPaycom_Uz = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
+//                         const payloadPaycom_Uz = "payload...";
+//                         const providerTokenPaycom_Uz = token.Paycom_Uz_TOKEN;
+//                         const currencyPaycom_Uz = "UZS"; // Проверьте правильность кода валюты
+//                         const pricesPaycom_Uz = [
+//                                 {
+//                                 label: "Oziqlanish kursi",
+//                                 amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsPaycom_Uz = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupPaycom_Uz = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responsePaycom_Uz = await bot.sendInvoice(
-                                chatIdValuePaycom_Uz,
-                                titlePaycom_Uz,
-                                descriptionPaycom_Uz,
-                                payloadPaycom_Uz,
-                                providerTokenPaycom_Uz,
-                                currencyPaycom_Uz,
-                                pricesPaycom_Uz,
-                                optionsPaycom_Uz,
-                                { reply_markup: replyMarkupPaycom_Uz }
-                                );
-                                console.log('Invoice sent successfully:', responsePaycom_Uz);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responsePaycom_Uz?.data || error.message);
-                        }
-                        break
-                case 'CLICK':
-                        const chatIdValueCLICK = chatId(message);
-                        const titleCLICK = "Oziqlanish kursi";
-                        const descriptionCLICK = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
-                        const payloadCLICK = "payload...";
-                        const providerTokenCLICK = token.PAYMENT_TOKEN;
-                        const currencyCLICK = "UZS"; // Проверьте правильность кода валюты
-                        const pricesCLICK = [
-                                {
-                                label: "Кziqlanish kursi",
-                                amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsCLICK = {
-                                need_name: true
-                        };
-                        const replyMarkupCLICK = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responsePaycom_Uz = await bot.sendInvoice(
+//                                 chatIdValuePaycom_Uz,
+//                                 titlePaycom_Uz,
+//                                 descriptionPaycom_Uz,
+//                                 payloadPaycom_Uz,
+//                                 providerTokenPaycom_Uz,
+//                                 currencyPaycom_Uz,
+//                                 pricesPaycom_Uz,
+//                                 optionsPaycom_Uz,
+//                                 { reply_markup: replyMarkupPaycom_Uz }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responsePaycom_Uz);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responsePaycom_Uz?.data || error.message);
+//                         }
+//                         break
+//                 case 'CLICK':
+//                         const chatIdValueCLICK = chatId(message);
+//                         const titleCLICK = "Oziqlanish kursi";
+//                         const descriptionCLICK = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
+//                         const payloadCLICK = "payload...";
+//                         const providerTokenCLICK = token.PAYMENT_TOKEN;
+//                         const currencyCLICK = "UZS"; // Проверьте правильность кода валюты
+//                         const pricesCLICK = [
+//                                 {
+//                                 label: "Кziqlanish kursi",
+//                                 amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsCLICK = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupCLICK = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseCLICK = await bot.sendInvoice(
-                                chatIdValueCLICK,
-                                titleCLICK,
-                                descriptionCLICK,
-                                payloadCLICK,
-                                providerTokenCLICK,
-                                currencyCLICK,
-                                pricesCLICK,
-                                optionsCLICK,
-                                { reply_markup: replyMarkupCLICK }
-                                );
-                                console.log('Invoice sent successfully:', responseCLICK);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseCLICK?.data || error.message);
-                        }
-                        break
-                case 'Global_Pay':
-                        const chatIdValueGlobal_Pay = chatId(message);
-                        const titleGlobal_Pay = "Oziqlanish kursi";
-                        const descriptionGlobal_Pay = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
-                        const payloadGlobal_Pay = "payload...";
-                        const providerTokenGlobal_Pay = token.Global_Pay_TOKEN;
-                        const currencyGlobal_Pay = "UZS"; // Проверьте правильность кода валюты
-                        const pricesGlobal_Pay = [
-                                {
-                                label: "Oziqlanish kursi",
-                                amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
-                                }
-                        ];
-                        const optionsGlobal_Pay = {
-                                need_name: true
-                        };
-                        const replyMarkupGlobal_Pay = keyboard.BackToHome; // Убедитесь, что это корректный объект
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseCLICK = await bot.sendInvoice(
+//                                 chatIdValueCLICK,
+//                                 titleCLICK,
+//                                 descriptionCLICK,
+//                                 payloadCLICK,
+//                                 providerTokenCLICK,
+//                                 currencyCLICK,
+//                                 pricesCLICK,
+//                                 optionsCLICK,
+//                                 { reply_markup: replyMarkupCLICK }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseCLICK);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseCLICK?.data || error.message);
+//                         }
+//                         break
+//                 case 'Global_Pay':
+//                         const chatIdValueGlobal_Pay = chatId(message);
+//                         const titleGlobal_Pay = "Oziqlanish kursi";
+//                         const descriptionGlobal_Pay = "Ushbu kurs bilan siz o'zingizni idealga olib kelasiz";
+//                         const payloadGlobal_Pay = "payload...";
+//                         const providerTokenGlobal_Pay = token.Global_Pay_TOKEN;
+//                         const currencyGlobal_Pay = "UZS"; // Проверьте правильность кода валюты
+//                         const pricesGlobal_Pay = [
+//                                 {
+//                                 label: "Oziqlanish kursi",
+//                                 amount: 3787100 // Убедитесь, что сумма указана в целых единицах валюты (например, копейки для RUB)
+//                                 }
+//                         ];
+//                         const optionsGlobal_Pay = {
+//                                 need_name: true
+//                         };
+//                         const replyMarkupGlobal_Pay = keyboard.BackToHome; // Убедитесь, что это корректный объект
 
-                        // Попробуем вызвать метод с проверенными параметрами
-                        try {
-                                const responseGlobal_Pay = await bot.sendInvoice(
-                                chatIdValueGlobal_Pay,
-                                titleGlobal_Pay,
-                                descriptionGlobal_Pay,
-                                payloadGlobal_Pay,
-                                providerTokenGlobal_Pay,
-                                currencyGlobal_Pay,
-                                pricesGlobal_Pay,
-                                optionsGlobal_Pay,
-                                { reply_markup: replyMarkupGlobal_Pay }
-                                );
-                                console.log('Invoice sent successfully:', responseGlobal_Pay);
-                                // Обновляем переменную isPaid после успешной отправки счета
-                                // isPaid = true;
-                        } catch (error) {
-                                console.error('Error sending invoice:', error.responseGlobal_Pay?.data || error.message);
-                        }
-                        break
-                default:
-                        await bot.sendMessage(message.chat.id, 'Неизвестный выбор.');
-                        break;
-        }
-    });
+//                         // Попробуем вызвать метод с проверенными параметрами
+//                         try {
+//                                 const responseGlobal_Pay = await bot.sendInvoice(
+//                                 chatIdValueGlobal_Pay,
+//                                 titleGlobal_Pay,
+//                                 descriptionGlobal_Pay,
+//                                 payloadGlobal_Pay,
+//                                 providerTokenGlobal_Pay,
+//                                 currencyGlobal_Pay,
+//                                 pricesGlobal_Pay,
+//                                 optionsGlobal_Pay,
+//                                 { reply_markup: replyMarkupGlobal_Pay }
+//                                 );
+//                                 console.log('Invoice sent successfully:', responseGlobal_Pay);
+//                                 // Обновляем переменную isPaid после успешной отправки счета
+//                                 // isPaid = true;
+//                         } catch (error) {
+//                                 console.error('Error sending invoice:', error.responseGlobal_Pay?.data || error.message);
+//                         }
+//                         break
+//                 default:
+//                         await bot.sendMessage(message.chat.id, 'Неизвестный выбор.');
+//                         break;
+//         }
+//     });
 
    /* async function checkPaymentStatusTranzzo(payload) {
         // Здесь необходимо реализовать проверку статуса оплаты через API платежного провайдера
